@@ -620,15 +620,18 @@ def calc_tank_days_left(conn, posto_id: int, combustivel: str, litros_atuais: fl
         return None
 
     # Consumo médio diário: soma dos litros / número de dias com dados (ou lookback)
+    from datetime import datetime, timedelta
+    cutoff = (datetime.now() - timedelta(days=lookback_days)).strftime('%Y-%m-%d')
+    
     rows = conn.execute(
         f"""
         SELECT data, SUM({col}) as litros
         FROM vendas
         WHERE posto_id = ?
-          AND data >= date('now', ?)
+          AND data >= ?
         GROUP BY data
         """,
-        (posto_id, f'-{lookback_days} day'),
+        (posto_id, cutoff),
     ).fetchall()
 
     if not rows:
