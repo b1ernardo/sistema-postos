@@ -144,16 +144,18 @@ def init_db() -> None:
             """
         )
         
-        try:
-            conn._conn.autocommit = True
-            cur.execute("ALTER TABLE vendas RENAME COLUMN litros_gas TO litros_gasolina")
-            cur.execute("ALTER TABLE vendas RENAME COLUMN litros_alcool TO litros_etanol")
-            cur.execute("ALTER TABLE vendas RENAME COLUMN preco_gas TO preco_gasolina")
-            cur.execute("ALTER TABLE vendas RENAME COLUMN preco_alcool TO preco_etanol")
-            conn._conn.autocommit = False
-        except Exception:
-            if hasattr(conn, '_conn'):
-                conn._conn.autocommit = False
+        for old_c, new_c in [
+            ("litros_gas", "litros_gasolina"), 
+            ("litros_alcool", "litros_etanol"), 
+            ("preco_gas", "preco_gasolina"), 
+            ("preco_alcool", "preco_etanol")
+        ]:
+            try:
+                cur.execute(f"SAVEPOINT sp_{old_c}")
+                cur.execute(f"ALTER TABLE vendas RENAME COLUMN {old_c} TO {new_c}")
+                cur.execute(f"RELEASE SAVEPOINT sp_{old_c}")
+            except Exception:
+                cur.execute(f"ROLLBACK TO SAVEPOINT sp_{old_c}")
 
         # Compras (NF combustíveis)
         cur.execute(
