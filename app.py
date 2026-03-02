@@ -903,6 +903,13 @@ def salvar():
 @app.route('/gerencial')
 @login_required
 def gerencial():
+    try:
+        return _gerencial()
+    except Exception as e:
+        import traceback
+        return f"<pre>{traceback.format_exc()}</pre>"
+
+def _gerencial():
     u = current_user()
     conn = get_db_connection()
 
