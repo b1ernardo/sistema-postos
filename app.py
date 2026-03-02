@@ -965,14 +965,14 @@ def gerencial():
     except Exception:
         itens_alerta = []
 
-    # Despesas do mês (por unidade)
-    despesas_mes = conn.execute(
+    despesas_mes_val = conn.execute(
         'SELECT COALESCE(SUM(valor),0) as total FROM despesas WHERE data LIKE ? AND posto_id = ?',
         (f'{mes}%', selected_posto_id),
-    ).fetchone()['total']
+    ).fetchone()
+    despesas_mes = float(despesas_mes_val['total'] or 0) if despesas_mes_val else 0.0
 
     # Receita estimada de combustíveis (se informado preço por litro no lançamento)
-    receita_comb_mes = conn.execute(
+    receita_comb_val = conn.execute(
         '''
         SELECT COALESCE(SUM(
             litros_gasolina*preco_gasolina +
@@ -984,7 +984,8 @@ def gerencial():
         WHERE data LIKE ? AND posto_id = ?
         ''',
         (f'{mes}%', selected_posto_id),
-    ).fetchone()['total']
+    ).fetchone()
+    receita_comb_mes = float(receita_comb_val['total'] or 0) if receita_comb_val else 0.0
 
     # Custo médio por litro (ponderado) com base nas NFs lançadas
     custos = conn.execute(
@@ -1013,7 +1014,7 @@ def gerencial():
 
     lucro_bruto_comb_mes = receita_comb_mes - custo_comb_mes
     financeiro_mes = float(total_mes['financeiro'] or 0) if total_mes else 0.0
-    lucro_liquido_estimado = financeiro_mes - float(despesas_mes or 0) - float(custo_comb_mes or 0)
+    lucro_liquido_estimado = financeiro_mes - despesas_mes - custo_comb_mes
     conn.close()
 
     return render_template(
