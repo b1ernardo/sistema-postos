@@ -230,20 +230,24 @@ def init_db() -> None:
         )
 
         # Seed 5 postos
-        if not cur.execute("SELECT 1 FROM postos LIMIT 1").fetchone():
+        cur.execute("SELECT 1 FROM postos LIMIT 1")
+        if not cur.fetchone():
             for i in range(1, 6):
                 cur.execute("INSERT INTO postos (nome_posto, cidade) VALUES (%s, %s)", (f"Posto 0{i}", ""))
 
         # Seed owner
-        if not cur.execute("SELECT 1 FROM users WHERE role = %s LIMIT 1", ("owner",)).fetchone():
+        cur.execute("SELECT 1 FROM users WHERE role = %s LIMIT 1", ("owner",))
+        if not cur.fetchone():
             cur.execute(
                 "INSERT INTO users (username, password_hash, role, posto_id, created_at) VALUES (%s,%s,%s,%s,%s)",
                 (DEFAULT_OWNER_USER, generate_password_hash(DEFAULT_OWNER_PASS), "owner", None, datetime.now().isoformat()),
             )
 
         # Seed tanques padrão por posto (se vazio)
-        if not cur.execute("SELECT 1 FROM estoque LIMIT 1").fetchone():
-            postos = cur.execute("SELECT id FROM postos ORDER BY id").fetchall()
+        cur.execute("SELECT 1 FROM estoque LIMIT 1")
+        if not cur.fetchone():
+            cur.execute("SELECT id FROM postos ORDER BY id")
+            postos = cur.fetchall()
             for p in postos:
                 pid = p["id"] if isinstance(p, dict) else p[0]
                 for comb, litros, cap in [
