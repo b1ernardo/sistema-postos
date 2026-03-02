@@ -533,6 +533,12 @@ def init_db() -> None:
 
     conn.commit()
     conn.close()
+
+try:
+    init_db()
+except Exception as e:
+    print(f"Erro ao inicializar db: {e}")
+
 @app.template_filter('format_data')
 def format_data(value):
     try:
