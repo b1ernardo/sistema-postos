@@ -127,12 +127,12 @@ def init_db() -> None:
                 pix DOUBLE PRECISION NOT NULL DEFAULT 0,
                 debito DOUBLE PRECISION NOT NULL DEFAULT 0,
                 credito DOUBLE PRECISION NOT NULL DEFAULT 0,
-                litros_gas DOUBLE PRECISION NOT NULL DEFAULT 0,
-                litros_alcool DOUBLE PRECISION NOT NULL DEFAULT 0,
+                litros_gasolina DOUBLE PRECISION NOT NULL DEFAULT 0,
+                litros_etanol DOUBLE PRECISION NOT NULL DEFAULT 0,
                 litros_diesel_s500 DOUBLE PRECISION NOT NULL DEFAULT 0,
                 litros_diesel_s10 DOUBLE PRECISION NOT NULL DEFAULT 0,
-                preco_gas DOUBLE PRECISION NOT NULL DEFAULT 0,
-                preco_alcool DOUBLE PRECISION NOT NULL DEFAULT 0,
+                preco_gasolina DOUBLE PRECISION NOT NULL DEFAULT 0,
+                preco_etanol DOUBLE PRECISION NOT NULL DEFAULT 0,
                 preco_diesel_s500 DOUBLE PRECISION NOT NULL DEFAULT 0,
                 preco_diesel_s10 DOUBLE PRECISION NOT NULL DEFAULT 0,
                 qtd_gas INTEGER NOT NULL DEFAULT 0,
@@ -143,6 +143,18 @@ def init_db() -> None:
             )
             """
         )
+        
+        try:
+            conn._conn.autocommit = True
+            cur.execute("ALTER TABLE vendas RENAME COLUMN litros_gas TO litros_gasolina")
+            cur.execute("ALTER TABLE vendas RENAME COLUMN litros_alcool TO litros_etanol")
+            cur.execute("ALTER TABLE vendas RENAME COLUMN preco_gas TO preco_gasolina")
+            cur.execute("ALTER TABLE vendas RENAME COLUMN preco_alcool TO preco_etanol")
+            conn._conn.autocommit = False
+        except Exception:
+            if hasattr(conn, '_conn'):
+                conn._conn.autocommit = False
+
         # Compras (NF combustíveis)
         cur.execute(
             """
