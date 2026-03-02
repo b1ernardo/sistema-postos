@@ -1893,3 +1893,8 @@ def logout():
 if __name__ == '__main__':
     init_db()
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    return f'<pre>{traceback.format_exc()}</pre>', 500
